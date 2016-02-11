@@ -1,15 +1,14 @@
 org.spase.registry
 ======
 
-Note from Christophe Noel: 
-The Spase Registry is a great work. Our intent is to be able to compile the source (that we have here merged from the 1.2.5 version on github, and from the html folder available in the WAR 1.2.6). You can now compile easily the project which include the missing html submodule (in the master).
+This software is a fork of the original Spase Registry developped by Todd King and owned by copyright (c) 2006-2016, by the Regents University of California.
+The software is licensed under Mozilla Public License 2.0.
 
-Regarding the license, it is unclear what kind of license is the WAR spase registry. It is also unclear who to contact in order to commercially use the software. Please if you have any information, contact us. We have until now unsucessfully tried to contact tking.
+The fork includes:
+- missing html directory, in order to be able to build the WAR
+- customs modification
 
-
-Servlets to provide a SPASE compliant registry services packaged as a deployable web application.
-
-See "LICENSE.TXT" for important licensing nformation.
+See "LICENSE.TXT" for important licensing information.
 
 # Build/Installation
 
