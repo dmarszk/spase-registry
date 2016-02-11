@@ -23,7 +23,9 @@
           </xsl:choose>
         </a>
         <xsl:text> </xsl:text>
-        <a class="xml-logo" href="{concat($spase.webroot, substring-after($id, '://'), '.xml')}">XML</a>
+        <a href="{concat($vmo:spase_web_root, substring-after($id, '://'), '.xml')}">
+          <img src="images/xml_icon.gif" alt="Get XML" height="11" width="22" title="Get XML"/>
+        </a>
       </td>
     </tr>
   </xsl:template>

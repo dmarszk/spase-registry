@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:sp="http://www.spase-group.org/data/schema" xmlns:vot="http://www.ivoa.net/xml/VOTable/VOTable/v1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:vmo="http://vmo.nasa.gov/xslt" version="2.0" exclude-result-prefixes="sp vot vmo">
-  <xsl:import href="vxo-vars.xsl"/>
+  <xsl:import href="vmo-vars.xsl"/>
   <!--  <xsl:import href="vmo-functions.xsl" use-when="system-property('xsl:version')='2.0'" /> -->
   <xsl:import href="common.xsl"/>
   <xsl:import href="votable.xsl"/>
@@ -8,7 +8,7 @@
   <xsl:output doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd" doctype-public="-//W3C//DTD XHTML 1.1//EN" method="xhtml" indent="yes" omit-xml-declaration="yes"/>
   <xsl:strip-space elements="*"/>
   <!-- Access information tree -->
-  <xsl:template match="sp:AccessInformation[ancestor::sp:Version ge '1.3.1']">
+  <xsl:template match="sp:AccessInformation[ancestor::sp:Spase/sp:Version ge '1.3.1']">
     <xsl:choose>
       <xsl:when test="count(../sp:AccessInformation) = 1">
         <dt>Repository</dt>
@@ -134,6 +134,7 @@
     </xsl:if>
     <div class="parameter">
       <h3>
+        <a id="{concat('par',position())}"/>
         <xsl:text>Parameter #</xsl:text>
         <xsl:value-of select="position()"/>
       </h3>
@@ -192,7 +193,7 @@
     </dd>
   </xsl:template>
   <!-- Field parameter -->
-  <xsl:template match="sp:Field[ancestor::sp:Version ge '1.3.1']">
+  <xsl:template match="sp:Field[ancestor::sp:Spase/sp:Version ge '1.3.1']">
     <xsl:apply-templates select="sp:FieldQuantity" mode="text">
       <xsl:with-param name="title" select="'Quantity'"/>
     </xsl:apply-templates>
@@ -203,7 +204,7 @@
     </xsl:apply-templates>
   </xsl:template>
   <!-- Particle parameter -->
-  <xsl:template match="sp:Particle[ancestor::sp:Version ge '1.3.1']">
+  <xsl:template match="sp:Particle[ancestor::sp:Spase/sp:Version ge '1.3.1']">
     <xsl:apply-templates select="sp:ParticleType" mode="text">
       <xsl:with-param name="title" select="'Particle type'"/>
     </xsl:apply-templates>
@@ -226,7 +227,7 @@
     </xsl:apply-templates>
   </xsl:template>
   <!-- Photon parameter -->
-  <xsl:template match="sp:Photon[ancestor::sp:Version ge '1.3.1']">
+  <xsl:template match="sp:Photon[ancestor::sp:Spase/sp:Version ge '1.3.1']">
     <xsl:apply-templates select="sp:PhotonQuantity" mode="text">
       <xsl:with-param name="title" select="'Quantity'"/>
     </xsl:apply-templates>
@@ -257,7 +258,7 @@
     <xsl:variable name="hash_value" select="sp:Checksum/sp:HashValue"/>
     <xsl:variable name="bgstyle">
       <xsl:value-of select="'background-image: url('"/>
-      <xsl:value-of select="$spase.webroot"/>
+      <xsl:value-of select="$vmo:spase_web_root"/>
       <xsl:call-template name="substring-before-last">
         <xsl:with-param name="string" select="substring-after($granule_id, '://')"/>
         <xsl:with-param name="char" select="'/'"/>

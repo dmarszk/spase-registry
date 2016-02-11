@@ -1,9 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:sp="http://www.spase-group.org/data/schema" xmlns:vot="http://www.ivoa.net/xml/VOTable/VOTable/v1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:vmo="http://vmo.nasa.gov/xslt" version="2.0" exclude-result-prefixes="sp vot vmo">
   <xsl:template name="top-arrow">
-    <xsl:if test="count(/Package)">
-    	<a href="#top" class="toparrow">toc-&gt;</a>
-    	</xsl:if>
+    <a href="#top" class="toparrow">&#8593;</a>
   </xsl:template>
   <xsl:template name="substring-before-last">
     <xsl:param name="string"/>

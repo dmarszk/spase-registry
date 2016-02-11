@@ -17,14 +17,11 @@
 
 package org.spase.registry.server;
 
-import igpp.servlet.MultiPrinter;
 import igpp.servlet.SmartHttpServlet;
-import igpp.util.Encode;
-import igpp.util.Text;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Set;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,84 +30,172 @@ import java.io.BufferedReader;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.StringReader;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class SimpleReg extends SmartHttpServlet
+// import org.apache.commons.cli.*;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.PosixParser;
+import org.apache.commons.cli.HelpFormatter;
+
+public class ModifiedSearch extends SmartHttpServlet
 {
-	private String	mVersion = "1.0.1";
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String	mVersion = "1.0.0";
+	private String mOverview = "Resolver retrieves a resource description for a given resource ID \n"
+									 + "or generates a list of resources at a given partial reosurce ID location.";
+	private String mAcknowledge = "Development funded by NASA's VMO project at UCLA.";
 
 	// Service configuration
 	String	mRootPath = ".";
 	String	mExtension = ".xml";
-	String	mXSLPathName = "spase-combined-tk.xsl";
 	
 	// Task options
+	boolean	mVerbose = false;
 	boolean	mRecurse = true;
-	boolean	mAllWords = true;
+	boolean	mAllWords = false;
 	ArrayList<String>	mWords = new ArrayList<String>();
-	String	mIdentifier = null;
 	String	mCategory = null;
-	boolean	mCheck = false;
-	String	mPattern = null;
-	String	mContent = null;
+
+	// Authority map
+	HashMap<String, String> mAuthorityMap = new HashMap<String, String>();
 	
-   /** 
+	// create the Options
+	Options mAppOptions = new org.apache.commons.cli.Options();
+
+ 	public ModifiedSearch() {
+		mAppOptions.addOption( "h", "help", false, "Dispay this text" );
+		mAppOptions.addOption( "v", "verbose", false, "Verbose. Show status at each step." );
+		mAppOptions.addOption( "l", "list", true, "Authority List Table. The path to an authority list table." );
+		
+		mAppOptions.addOption( "a", "all", false, "All. Match all words. Default: " + mAllWords );
+		mAppOptions.addOption( "b", "base", true, "Base. Set the base path to resource descriptions. Default: " + mRootPath);
+		mAppOptions.addOption( "x", "extension", true, "Extension. Set the file extension for file names containing resource descriptions. Default: " + mExtension);
+		mAppOptions.addOption( "r", "recursive", false, "Recursive. Retrieve the description for the given resource ID and for all resources referenced in the description." );
+		mAppOptions.addOption( "c", "category", true, "Category. Limit search to a category of resources." );
+		mAppOptions.addOption( "w", "words", true, "Words. List of one or more words to search for in the content of the resource descriptions." );
+	}	
+
+  /** 
 	 * Command-line interface.
 	 **/
 	public static void main(String args[])
    {
-		SimpleReg me = new SimpleReg();
+		ModifiedSearch me = new ModifiedSearch();
+		
+		me.mOut.setOut(System.out);
 		
 		System.out.println("Version: " + me.mVersion);
 		
-		if(args.length < 1) {
-			System.out.println("Usage: " + me.getClass().getName() + "[-b {path}] [-p {pattern}] [-i {identifier}] [-x {extension}] [-c {category}] [-k] [-r] {words}");
-			return;
+		if (args.length < 1) {
+			me.showHelp();
+			System.exit(1);
 		}
 
-		me.mOut.setOut(System.out);
-	
-		try {
-			for(int i = 0; i < args.length; i++) {
-				if(args[i].compareTo("-b") == 0) {	// set base path
-					i++;
-					if(i < args.length) me.setRootPath(args[i]);
-				} else if(args[i].compareTo("-x") == 0) {	// Extension
-					i++;
-					if(i < args.length) me.setExtension(args[i]);
-				} else if(args[i].compareTo("-k") == 0) {	// check only
-					me.setCheck(true);
-				} else if(args[i].compareTo("-i") == 0) {	// identifier
-					i++;
-					if(i < args.length) me.setIdentifier(args[i]);
-				} else if(args[i].compareTo("-p") == 0) {	// pattern
-					i++;
-					if(i < args.length) me.setPattern(args[i]);
-				} else if(args[i].compareTo("-t") == 0) {	// content
-					i++;
-					if(i < args.length) me.setContent(args[i]);
-				} else if(args[i].compareTo("-s") == 0) {	// stylsheet
-					i++;
-					if(i < args.length) me.setXSLPathName(args[i]);
-				} else if(args[i].compareTo("-c") == 0) {	// category
-					i++;
-					if(i < args.length) me.setCategory(args[i]);
-				} else if(args[i].compareTo("-r") == 0) {	// Recurse
-					me.mRecurse = true;
-				} else {	// Load resource at path
-				   me.setWords(args[i]);
-				}
-			}
+		
+		CommandLineParser parser = new PosixParser();
+		try { // parse the command line arguments
+         CommandLine line = parser.parse(me.mAppOptions, args);
+
+			if(line.hasOption("h")) me.showHelp();
+			if(line.hasOption("v")) me.mVerbose = true;
+			if(line.hasOption("r")) me.mRecurse = true;
+			if(line.hasOption("a")) me.mAllWords = true;
+			
+			if(line.hasOption("b")) me.setBasePath(line.getOptionValue("b"));
+			
+			if(line.hasOption("l")) me.loadAuthority(line.getOptionValue("l"));
+			
+			if(line.hasOption("x")) me.setExtension(line.getOptionValue("x"));
+			if(line.hasOption("c")) me.setCategory(line.getOptionValue("c"));
+			if(line.hasOption("w")) me.setWords(line.getOptionValue("w"));
+
 			me.doAction();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
    }
+
+ 	/**
+	 * Display help information.
+	 **/
+	public void showHelp()
+	{
+		System.out.println("");
+		System.out.println(getClass().getName() + "; Version: " + mVersion);
+		System.out.println(mOverview);
+		System.out.println("");
+		System.out.println("Usage: java " + getClass().getName() + " [options] [file...]");
+		System.out.println("");
+		System.out.println("Options:");
+		
+		// automatically generate the help statement
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp(getClass().getName(), mAppOptions);
+
+		System.out.println("");
+		System.out.println("Acknowledgements:");
+		System.out.println(mAcknowledge);
+		System.out.println("");
+	}
+	
+	/** 
+	 * Send the capabilities information to the current output stream.
+	 *
+	 * The capabilities is packaged in an XML formatted response document.
+	 **/
+	public void sendCapabilities(String title)
+   	throws Exception
+	{
+		String param[] = {"help", "all", "category", "word"};
+		ArrayList<String> aware = new ArrayList<String>();
+		
+		aware.add(":This service knows about the following authorities:");
+		Set<String> keyset = mAuthorityMap.keySet();
+		for(String key : keyset) {
+			aware.add(key);
+		}
+			
+		sendCapabilities(title, mOverview, mAcknowledge, param, aware);
+	}
+
+	/** 
+	 * Load an Authority lookup table. 
+	 *
+	 * A table consists of rows composed of
+	 * authority name and file path seperated by whitespace. 
+	 * Lines beginning with "#" are considered comments.
+	 **/
+	public void loadAuthority(String pathname)
+	{
+		try {
+			pathname = getRealPath("conf", pathname);
+			
+			File file = new File(pathname);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+			String	buffer;
+			
+			// Load authority info
+			while((buffer = reader.readLine()) != null) {
+				if(mVerbose) System.out.println(buffer);
+				if(buffer.startsWith("#")) continue;
+				String[] part = buffer.split("[ \t]", 2);
+				if(part.length < 2) continue;
+				mAuthorityMap.put(part[0].trim(), getRealPath("", part[1].trim()));
+			}
+			
+			reader.close();
+		} catch(Exception e) {
+			System.out.println(getClass().getName() + ":" + e.getMessage());
+		}
+	}
 
 	/**
 	 * Initialize servlet.
@@ -123,14 +208,14 @@ public class SimpleReg extends SmartHttpServlet
    {
    	super.init();
    	
-		String value = getServletConfig().getInitParameter("RootPath");
-   	if(value != null) setRootPath(value);
+   	String value = getServletConfig().getInitParameter("BasePath");	// Where files are stored
+   	if(value != null) setBasePath(value);
+   	
+   	value = getServletConfig().getInitParameter("AuthorityList");	// Authority list - handled locally
+   	if(value != null) loadAuthority(value);
    	
    	value = getServletConfig().getInitParameter("Extension");
    	if(value != null) setExtension(value);
-   	
-   	value = getServletConfig().getInitParameter("XSLPathName");
-   	if(value != null) setXSLPathName(value);
    }
    
 
@@ -141,11 +226,7 @@ public class SimpleReg extends SmartHttpServlet
 	{
 		mWords.clear();	
 		mCategory = null;
-		mAllWords = true;
-		mIdentifier = null;
-		mCheck = false;
-		mPattern = null;
-		mContent = null;
+		mAllWords = false;
 	}
 	
 	/** 
@@ -160,11 +241,7 @@ public class SimpleReg extends SmartHttpServlet
 		
 		setWords(igpp.util.Text.getValue(request.getParameter("words"), ""));
 		setAllWords(igpp.util.Text.getValue(request.getParameter("all"), ""));
-		setIdentifier(igpp.util.Text.getValue(request.getParameter("identifier"), null));
-		setPattern(igpp.util.Text.getValue(request.getParameter("pattern"), null));
-		setContent(igpp.util.Text.getValue(request.getParameter("content"), null));
 		setCategory(igpp.util.Text.getValue(request.getParameter("category"), null));
-		setCheck(igpp.util.Text.getValue(request.getParameter("check"), ""));
 	}
 	
    /**
@@ -222,16 +299,19 @@ public class SimpleReg extends SmartHttpServlet
 	{
 		setFromRequest(request);
 		
-		// Identifier overrides words
-		if(mIdentifier != null) { mWords.clear(); mAllWords = false; }
-		
 		// Category overrides 
 		if(igpp.util.Text.isSetMatch(mCategory, "-")) mCategory = null;
 		
 		// get ready to write response
 		mOut.setOut(response.getWriter());
-		response.setContentType("text/xml");
+
+		if(request.getParameter("h") != null) { // Send self documentation
+			response.setContentType("text/html");
+			sendCapabilities(request.getRequestURI()); 
+			return; 
+		}
 		
+		response.setContentType("text/xml");
 		doAction();
 	}
 	
@@ -247,64 +327,21 @@ public class SimpleReg extends SmartHttpServlet
 		if(mCategory != null) catPath = File.separator + mCategory;
 		ArrayList<String> matches = new ArrayList<String>();
 		
-		
-		String basePath = mRootPath + catPath;
-		if(mPattern != null) {
-			if(mContent != null) {
-				if(igpp.util.Text.isMatch(mContent, "HTML")) {	// Transform to HTML
-					String content = streamToString(igpp.util.Text.concatPath(basePath, mPattern), false);
-					igpp.xml.Transform.perform(
-						new StringReader(content),
-						mXSLPathName, mOut);
-				} else {	// Stream raw contents
-					mOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-					streamFile(igpp.util.Text.concatPath(basePath, mPattern));
-				}
-				return;
-			}
-			matches = scanPath(basePath, mPattern);
-			Collections.sort(matches);
-		} else {
-			matches = search(basePath, mWords, mIdentifier);
+		Set<String> keyset = mAuthorityMap.keySet();
+		for(String key : keyset) {
+			String path = mAuthorityMap.get(key);
+			ArrayList<String> matchList = search(path + catPath, mWords);
+			if(matchList != null) matches.addAll(matchList);
 		}
 
 		mOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		
 		// Stream files
-		if(mPattern != null) {	// Send file lists
-			mOut.println("<Response>");
-			for(String name : matches) {
-				File test = new File(name);
-				if(test.isDirectory()) {	// Node
-					mOut.println("<node pattern=\"" + name.substring(basePath.length()) + "\"" 
-						+ " id=\"" + name.substring(basePath.length()) + "\""
-						+ " text=\"" + igpp.util.Text.getFileBase(test.getName()) + "\""
-						+ " name=\"" + igpp.util.Text.getFileBase(test.getName()) + "\""
-						+ " />");
-				} else {	// Leaf
-					mOut.println("<leaf pattern=\"" + name.substring(basePath.length()) + "\""
-						+ " id=\"" + name.substring(basePath.length()) + "\""
-						+ " text=\"" + igpp.util.Text.getFileBase(test.getName()) + "\""
-						+ " name=\"" + igpp.util.Text.getFileBase(test.getName()) + "\""
-						+ " />");
-				}
-			}
-			mOut.println("</Response>");
-		} else {	// Return content
-			if(mCheck) {	// Return status tag
-				mOut.println("<Check>");
-				mOut.println("   <Valid>" + igpp.util.Text.getYesNo(matches.size() > 0) + "</Valid>");
-				mOut.println("</Check>");
-			} else {	// Stream the descriptions
-				mOut.println("<Spase>");
-				mOut.println("   <Version>1.2.1</Version>");
-				for(String name : matches) {
-					stream(name);
-				}
-				mOut.println("</Spase>");
-			}
+		mOut.println("<Package>");
+		for(String name : matches) {
+			stream(name);
 		}
-		
+   	    mOut.println("</Package>");
 	}
 	
 	
@@ -365,11 +402,10 @@ public class SimpleReg extends SmartHttpServlet
 	 *
 	 * @param path the path to scan. 
 	 * @param words	the {@link ArrayList} of words to search for. If null no word search is performed.
-	 * @param identifier the resource identifier to search for. If null no identifier search is performed.
 	 *
 	 * @return an {@link ArrayList} of {@link String} values of paths to the files and folders found.
 	 **/
-	public ArrayList<String> search(String path, ArrayList<String> words, String identifier)
+	public ArrayList<String> search(String path, ArrayList<String> words)
 		throws Exception
 	{
 		ArrayList<String> matches = new ArrayList<String>();
@@ -395,7 +431,7 @@ public class SimpleReg extends SmartHttpServlet
 			for(File item : list) {
 				resourcePath = item.getCanonicalPath();
 				try {
-					if(scan(resourcePath, words, identifier)) matches.add(resourcePath);
+					if(scan(resourcePath, words)) matches.add(resourcePath);
 				} catch(Exception e) {
 					mOut.println("Error parsing: " + resourcePath);
 					mOut.println(e.getMessage());
@@ -407,12 +443,14 @@ public class SimpleReg extends SmartHttpServlet
 		if(mRecurse) {
 		   list = filePath.listFiles(new FileFilter()	
 		   	{ 
-		   		public boolean accept(File pathname) { return (pathname.isDirectory() && !pathname.getName().startsWith(".")); } 
+		   		// Skip hidden files (.*), relative directories (. and ..) and "Granule" folders
+		   		public boolean accept(File pathname) { if(pathname.getName().compareToIgnoreCase("Granule") == 0) return false;
+		   		                                       return (pathname.isDirectory() && !pathname.getName().startsWith(".")); } 
 		   	} 
 		   	);
 			if(list != null) {	// Found some files to process
 				for(int y = 0; y < list.length; y++) {
-					matches.addAll(search(list[y].getCanonicalPath(), words, identifier));			
+					matches.addAll(search(list[y].getCanonicalPath(), words));			
 				}
 			}
 		}
@@ -425,11 +463,10 @@ public class SimpleReg extends SmartHttpServlet
 	 *
 	 * @param path the path to scan. 
 	 * @param words	the {@link ArrayList} of words to search for. If null no word search is performed.
-	 * @param identifier the resource identifier to search for. If null no identifier search is performed.
 	 *
 	 * @return true of words or identifier are founde, false otherwise.
 	 **/	
-	public boolean scan(String path, ArrayList<String> words, String identifier)
+	public boolean scan(String path, ArrayList<String> words)
 		throws Exception
 	{
 		boolean match = false;
@@ -445,9 +482,6 @@ public class SimpleReg extends SmartHttpServlet
 		
 		// Search for word
 		while((buffer = reader.readLine()) != null) {
-			if(identifier != null) {
-				if(buffer.indexOf(identifier) != -1) {match = true; break; }
-			}
 			buffer = buffer.toUpperCase();
 			for(String word : words) {
 				String[] snip = buffer.split("[\\p{Punct}\\p{Blank}]");
@@ -483,22 +517,6 @@ public class SimpleReg extends SmartHttpServlet
 	public void stream(String pathname)
 		throws Exception
 	{
-		stream(pathname, true);
-	}
-	
-	/**
-	 * Stream content between the <Spase>/</Spase> tags
-	 * 
-	 * The content of a SPASE XML document is sent to the output stream.
-	 * The version tag can optionally be striped from the stream.
-	 *
-	 * @param pathname the pathname of the file to scan and stream.
-	 * @param stripVersion if true the version tag with be stripped, otherwise it will be included.
-	 **/
-	public void stream(String pathname, boolean stripVersion)
-		throws Exception
-	{
-		boolean on = false;
 		String	buffer;
 		BufferedReader reader = null;
 	
@@ -508,12 +526,8 @@ public class SimpleReg extends SmartHttpServlet
 			
 			// Search for word
 			while((buffer = reader.readLine()) != null) {
-				if(buffer.indexOf("<Version>") != -1 && stripVersion) continue;	// Skip
-				if(on) {	// Check for end tag
-					if(buffer.indexOf("</Spase>") != -1) on = false;
-					else mOut.println(buffer);
-				}
-				if(buffer.indexOf("<Spase") != -1) on = true;
+				if(buffer.indexOf("<?xml ") != -1) continue;
+				mOut.println(buffer);
 			}
 		} catch(Exception e) {
 		} finally {
@@ -522,20 +536,16 @@ public class SimpleReg extends SmartHttpServlet
 	}
 	
 	/**
-	 * Read content between the <Spase>/</Spase> tags into a String
+	 * Read the content of a SPASE XML document into a String. 
+	 * The XML document tag "<xml ... ?> is striped from the stream.
 	 *
-	 * The content of a SPASE XML document is processed and streamed to 
-	 * a String. The version tag can optionally be striped from the stream.
-	 *
-	 * @param pathname the pathname of the file to scan and stream.
-	 * @param stripVersion if true the version tag with be stripped, otherwise it will be included.
+	 * @param pathname the pathname of the file to scan and read.
 	 *
 	 * @return {@link String} containing the extracted content.
 	 **/
-	public String streamToString(String pathname, boolean stripVersion)
+	public String streamToString(String pathname)
 		throws Exception
 	{
-		boolean on = false;
 		String	buffer;
 		BufferedReader reader = null;
 		StringBuffer	content = new StringBuffer();
@@ -546,12 +556,8 @@ public class SimpleReg extends SmartHttpServlet
 			
 			// Search for word
 			while((buffer = reader.readLine()) != null) {
-				if(buffer.indexOf("<Version>") != -1 && stripVersion) continue;	// Skip
-				if(on) {	// Check for end tag
-					if(buffer.indexOf("</Spase>") != -1) on = false;
-					content.append(buffer);
-				}
-				if(buffer.indexOf("<Spase") != -1) { on = true; content.append("<Spase>"); }
+				if(buffer.indexOf("<?xml ") != -1) continue;
+				content.append(buffer);
 			}
 		} catch(Exception e) {
 		} finally {
@@ -588,17 +594,11 @@ public class SimpleReg extends SmartHttpServlet
 	}
 	
 	private void setExtension(String value) { mExtension = value; }
-	private void setRootPath(String value) { mRootPath = value; }
-	private void setXSLPathName(String value) { mXSLPathName = value; }
+	
+	public void setBasePath(String value) { mAuthorityMap.put("base", value); }
 	
 	public void setWords(String value) throws Exception { if(igpp.util.Text.isEmpty(value)) return; if(value.compareTo("*") == 0) { mWords.add(value); return; } String[] words = value.split("[\\p{Punct}\\p{Blank}]"); for(String word : words) { word = word.trim(); if(word.length() > 0) mWords.add(word.toUpperCase()); } }
 	public ArrayList<String> getWords() { return mWords; }
-	
-	public void setIdentifier(String value) { if(igpp.util.Text.isEmpty(value)) return; mIdentifier = "<ResourceID>" + value + "</ResourceID>"; }
-	public String getIdentifier() { return mIdentifier; }
-	
-	public void setPattern(String value) { if(igpp.util.Text.isEmpty(value)) return; mPattern = value; }
-	public String getPattern() { return mPattern; }
 	
 	public void setCategory(String value) throws Exception { if(igpp.util.Text.isEmpty(value)) return; mCategory = value; }
 	public String getCategory() { return mCategory; }
@@ -607,11 +607,4 @@ public class SimpleReg extends SmartHttpServlet
 	public void setAllWords(String value) throws Exception { if(igpp.util.Text.isEmpty(value)) return; mAllWords = igpp.util.Text.isTrue(value); }
 	public boolean getAllWords() { return mAllWords; }
 	
-	public void setCheck(boolean value) { mCheck = value; }
-	public void setCheck(String value) throws Exception { if(igpp.util.Text.isEmpty(value)) return; mCheck = igpp.util.Text.isTrue(value); }
-	public boolean getCheck() { return mCheck; }
-	
-	public void setContent(String value) { mContent = value; }
-	public String getContent() { return mContent; }
-
 }

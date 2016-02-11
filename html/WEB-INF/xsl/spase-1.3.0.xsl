@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:sp="http://www.spase-group.org/data/schema" xmlns:vot="http://www.ivoa.net/xml/VOTable/VOTable/v1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:vmo="http://vmo.nasa.gov/xslt" version="2.0" exclude-result-prefixes="sp vot vmo">
-  <xsl:import href="vxo-vars.xsl"/>
+  <xsl:import href="vmo-vars.xsl"/>
   <!--  <xsl:import href="vmo-functions.xsl" use-when="system-property('xsl:version')='2.0'" /> -->
   <xsl:import href="common.xsl"/>
   <xsl:import href="votable.xsl"/>
@@ -8,21 +8,30 @@
   <xsl:strip-space elements="*"/>
   <xsl:key name="name-by-id" match="sp:ResourceName" use="../../sp:ResourceID"/>
   <xsl:key name="person-name-by-id" match="sp:PersonName" use="../sp:ResourceID"/>
-
+  <xsl:template match="/">
+    <html>
+      <head>
+        <title>SPASE Resource Description</title>
+        <link href="css/spase.css" rel="stylesheet" type="text/css"/>
+      </head>
+      <body>
+        <div>
+          <a id="top"/>
+        </div>
+        <xsl:apply-templates select="sp:Spase"/>
+      </body>
+    </html>
+  </xsl:template>
   <xsl:template match="sp:Spase">
-  	 <div class="spase">
     <xsl:apply-templates select="sp:Granule"/>
     <xsl:apply-templates select="sp:Catalog"/>
-    <xsl:apply-templates select="sp:DisplayData"/>
-    <xsl:apply-templates select="sp:NumericalData"/>
+    <xsl:apply-templates select="sp:NumericalData|sp:DisplayData"/>
     <xsl:apply-templates select="sp:Instrument"/>
     <xsl:apply-templates select="sp:Observatory"/>
     <xsl:apply-templates select="sp:Person"/>
-    <xsl:apply-templates select="sp:Registry"/>
-    <xsl:apply-templates select="sp:Repository"/>
+    <xsl:apply-templates select="sp:Registry|sp:Repository"/>
     <xsl:apply-templates select="sp:Service"/>
     <xsl:apply-templates select="sp:Granule/sp:Extension/vot:VOTABLE"/>
-    </div>
   </xsl:template>
   <!-- Granule resource -->
   <xsl:template match="sp:Granule">
@@ -30,7 +39,7 @@
     <xsl:variable name="hash_value" select="sp:Checksum/sp:HashValue"/>
     <xsl:variable name="bgstyle">
       <xsl:value-of select="'background-image: url('"/>
-      <xsl:value-of select="$spase.webroot"/>
+      <xsl:value-of select="$vmo:spase_web_root"/>
       <xsl:call-template name="substring-before-last">
         <xsl:with-param name="string" select="substring-after($granule_id, '://')"/>
         <xsl:with-param name="char" select="'/'"/>
@@ -39,7 +48,7 @@
       <xsl:value-of select="$hash_value"/>
       <xsl:value-of select="'.png); background-repeat: no-repeat; background-position: right bottom; min-height: 300px;'"/>
     </xsl:variable>
-    <div class="granule" style="{$bgstyle}">
+    <div style="{$bgstyle}" id="granule">
       <xsl:apply-templates select="../sp:Version"/>
       <h1><a id="{$granule_id}"/>File Information (Granule)
       </h1>
@@ -464,18 +473,22 @@
   </xsl:template>
   <xsl:template name="spase_id">
     <dd>
-      <a href="{concat($spase.render, '?id=', .)}">
+      <a href="{concat($vmo:php_script_name,.)}">
         <xsl:value-of select="."/>
       </a>
       <xsl:text> </xsl:text>
-      <a class="xml-logo" href="{concat($spase.resolver, '?id=', .)}">XML</a>
+      <a href="{concat($vmo:spase_web_root, substring-after(., '://'), '.xml')}">
+        <img src="images/xml_icon.gif" alt="Get XML" height="11" width="22" title="Get XML"/>
+      </a>
     </dd>
   </xsl:template>
   <xsl:template name="spase_id_xml_only">
     <dd>
       <xsl:value-of select="."/>
       <xsl:text> </xsl:text>
-      <a class="xml-logo" href="{concat($spase.resolver, '?id=', .)}">XML</a>
+      <a href="{concat($vmo:spase_web_root, substring-after(., '://'), '.xml')}">
+        <img src="images/xml_icon.gif" alt="Get XML" height="11" width="22" title="Get XML"/>
+      </a>
     </dd>
   </xsl:template>
   <xsl:template name="link-name-id">
@@ -492,7 +505,7 @@
     </xsl:variable>
     <xsl:choose>
       <xsl:when test="$nkeys = 0">
-        <a href="{concat($spase.render, '?id=', .)}"><xsl:value-of select="."/></a>
+        <xsl:value-of select="."/>
       </xsl:when>
       <xsl:otherwise>
         <a>
@@ -511,7 +524,9 @@
       </xsl:otherwise>
     </xsl:choose>
     <xsl:text> </xsl:text>
-    <a class="xml-logo" href="{concat($spase.resolver, '?id=', .)}">XML</a>
+    <a href="{concat($vmo:spase_web_root, substring-after(., '://'), '.xml')}">
+      <img src="images/xml_icon.gif" alt="Get XML" height="11" width="22" title="Get XML"/>
+    </a>
   </xsl:template>
   <xsl:template match="sp:ParentID|sp:InstrumentID|sp:RepositoryID|sp:ObservatoryID">
     <xsl:param name="title" select="'Resource ID'"/>

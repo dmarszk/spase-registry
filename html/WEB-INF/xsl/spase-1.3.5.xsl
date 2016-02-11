@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:sp="http://www.spase-group.org/data/schema" xmlns:vot="http://www.ivoa.net/xml/VOTable/VOTable/v1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:vmo="http://vmo.nasa.gov/xslt" version="2.0" exclude-result-prefixes="sp vot vmo">
-  <xsl:import href="vxo-vars.xsl"/>
+  <xsl:import href="vmo-vars.xsl"/>
   <!--  <xsl:import href="vmo-functions.xsl" use-when="system-property('xsl:version')='2.0'" /> -->
   <xsl:import href="common.xsl"/>
   <xsl:import href="votable.xsl"/>
@@ -9,7 +9,7 @@
   <xsl:strip-space elements="*"/>
   <!-- Updated hierarchy -->
   <!-- AccessURL is new in Registry and Repository -->
-  <xsl:template match="sp:Registry[ancestor::sp:Version ge '1.3.5']|sp:Repository[ancestor::sp:Version ge '1.3.5']">
+  <xsl:template match="sp:Registry[ancestor::sp:Spase/sp:Version ge '1.3.5']|sp:Repository[ancestor::sp:Spase/sp:Version ge '1.3.5']">
     <div class="repository">
       <xsl:apply-templates select="../sp:Version"/>
       <h1>
@@ -69,12 +69,13 @@
     </div>
   </xsl:template>
   <!-- Parameter hierarchy -->
-  <xsl:template match="sp:Parameter[ancestor::sp:Version ge '1.3.5']">
+  <xsl:template match="sp:Parameter[ancestor::sp:Spase/sp:Version ge '1.3.5']">
     <xsl:if test="position() = 1">
       <h2>Parameters</h2>
     </xsl:if>
     <div class="parameter">
       <h3>
+        <a id="{concat('par',position())}"/>
         <xsl:text>Parameter #</xsl:text>
         <xsl:value-of select="position()"/>
       </h3>
@@ -110,7 +111,7 @@
     </div>
   </xsl:template>
   <!-- Mixed parameter -->
-  <xsl:template match="sp:Mixed[ancestor::sp:Version ge '1.3.5']">
+  <xsl:template match="sp:Mixed[ancestor::sp:Spase/sp:Version ge '1.3.5']">
     <xsl:apply-templates select="sp:MixedQuantity" mode="text">
       <xsl:with-param name="title" select="'Quantity'"/>
     </xsl:apply-templates>

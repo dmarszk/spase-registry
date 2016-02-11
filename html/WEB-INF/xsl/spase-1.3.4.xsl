@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:sp="http://www.spase-group.org/data/schema" xmlns:vot="http://www.ivoa.net/xml/VOTable/VOTable/v1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:vmo="http://vmo.nasa.gov/xslt" version="2.0" exclude-result-prefixes="sp vot vmo">
-  <xsl:import href="vxo-vars.xsl"/>
+  <xsl:import href="vmo-vars.xsl"/>
   <!--  <xsl:import href="vmo-functions.xsl" use-when="system-property('xsl:version')='2.0'" /> -->
   <xsl:import href="common.xsl"/>
   <xsl:import href="votable.xsl"/>
@@ -40,7 +40,7 @@
     </div>
   </xsl:template>
   <!-- Particle parameter -->
-  <xsl:template match="sp:Particle[ancestor::sp:Version ge '1.3.4']">
+  <xsl:template match="sp:Particle[ancestor::sp:Spase/sp:Version ge '1.3.4']">
     <xsl:apply-templates select="sp:ParticleType" mode="text">
       <xsl:with-param name="title" select="'Particle type'"/>
     </xsl:apply-templates>
@@ -116,7 +116,7 @@
     <xsl:text>Line of sight</xsl:text>
   </xsl:template>
   <!-- Resource Header hierarchy -->
-  <xsl:template match="sp:ResourceHeader[ancestor::sp:Version ge '1.3.3']">
+  <xsl:template match="sp:ResourceHeader[ancestor::sp:Spase/sp:Version ge '1.3.3']">
     <xsl:apply-templates select="sp:ResourceName" mode="text">
       <xsl:with-param name="title" select="'Name'"/>
     </xsl:apply-templates>
@@ -168,11 +168,13 @@
         <dd>
           <xsl:apply-templates select="sp:AssociationType" mode="enum"/>
           <xsl:text> </xsl:text>
-          <a href="{concat($spase.render, '?id=', sp:AssociationID)}">
+          <a href="{concat($vmo:php_script_name,sp:AssociationID)}">
             <xsl:value-of select="sp:AssociationID"/>
           </a>
           <xsl:text> </xsl:text>
-          <a class="xml-logo" href="{concat($spase.resolver, 'id=', sp:AssociationID)}">XML</a>
+          <a href="{concat($vmo:spase_web_root, substring-after(sp:AssociationID, '://'), '.xml')}">
+            <img src="images/xml_icon.gif" alt="Get XML" height="11" width="22" title="Get XML"/>
+          </a>
         </dd>
         <xsl:apply-templates select="sp:Note"/>
       </dl>
