@@ -1,5 +1,10 @@
 See "LICENSE.TXT" for important licensing nformation.
 
+Note from Christophe Noel: 
+The Spase Registry is a great work. Our intent is to be able to compile the source (that we have here merged from the 1.2.5 version on github, and from the html folder available in the WAR 1.2.6). You can now compile easily the project which include the missing html submodule (in the master)
+Regarding the license, it is unclear what kind of license is the WAR spase registry. It is also unclear who to contact in order to commercially use the software. Please if you have any information, contact us. We have until now unsucessfully tried to contact tking.
+--
+
 Build/Installation
 
 Apache Ant can be used to build this project.
