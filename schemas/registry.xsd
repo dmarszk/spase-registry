@@ -9,8 +9,8 @@
 			<xs:element ref="spase:Spase" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
-		<xs:element name="Element" type="ElementType"/>
-	<xs:complexType name="ElementType">
+		<xs:element name="Results" type="ResultsType"/>
+	<xs:complexType name="ResultsType">
 		<xs:sequence>
 			<xs:element ref="spase:Spase" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
