@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- edited with XMLSpy v2006 sp2 U (http://www.altova.com) by Joel Lim (Spacebel SA) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:swe-spase="http://esa.ssa.swe/swep/datamodel/spase-extension" targetNamespace="http://esa.ssa.swe/swep/datamodel/spase-extension" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:element name="SSAMappings">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="SourceTypeMapping" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="location" type="xs:token" minOccurs="0"/>
+							<xs:element name="acquisitionProcess" type="xs:token" minOccurs="0"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="UserDomains" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="UserDomain" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Acronym" type="xs:token">
+											<xs:annotation>
+												<xs:documentation>See mapping extension</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="Relevance">
+											<xs:simpleType>
+												<xs:restriction base="xs:token">
+													<xs:enumeration value="High"/>
+													<xs:enumeration value="Medium"/>
+													<xs:enumeration value="Low"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="ParameterMappings" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="ParameterMapping" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="ParameterKey" type="xs:token"/>
+										<xs:element name="ColumnType">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="dataType">
+														<xs:simpleType>
+															<xs:restriction base="xs:token">
+																<xs:enumeration value="numeric"/>
+																<xs:enumeration value="text"/>
+																<xs:enumeration value="temporal"/>
+																<xs:enumeration value="binary-chart"/>
+																<xs:enumeration value="binary-picture"/>
+																<xs:enumeration value="binary-map"/>
+																<xs:enumeration value="binary-video"/>
+															</xs:restriction>
+														</xs:simpleType>
+													</xs:element>
+													<xs:element name="dataCategory">
+														<xs:simpleType>
+															<xs:restriction base="xs:token">
+																<xs:enumeration value="index"/>
+																<xs:enumeration value="statistics model"/>
+																<xs:enumeration value="nowcast"/>
+																<xs:enumeration value="forecast"/>
+																<xs:enumeration value="archive"/>
+																<xs:enumeration value="measured data"/>
+																<xs:enumeration value="other"/>
+															</xs:restriction>
+														</xs:simpleType>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="ObservedProperty" type="xs:token" minOccurs="0"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SEDATParameters">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Name" type="xs:token"/>
+				<xs:element name="ParticleCode" type="xs:token"/>
+				<xs:element name="RegionCode" type="xs:token"/>
+				<xs:element name="MinEnergy" type="xs:float"/>
+				<xs:element name="MaxEnergy" type="xs:float">
+					<xs:annotation>
+						<xs:documentation>Should this be xs:decimal instead of float </xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="TemporalDescription">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Cadence" type="xs:duration"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="UserDomainMappings">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Mapping" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Name" type="xs:token"/>
+							<xs:element name="Acronym" type="xs:token"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="DependentVariable">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Name" type="xs:normalizedString"/>
+				<xs:element name="Description" type="xs:normalizedString"/>
+				<xs:element name="Parent" type="xs:normalizedString"/>
+				<xs:element name="Index" type="xs:nonNegativeInteger"/>
+				<xs:element name="Units" type="xs:normalizedString"/>
+				<xs:element name="UnitsConversion" type="xs:normalizedString"/>
+				<xs:element name="Structure">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Size"/>
+							<xs:element name="Element" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Index" type="xs:nonNegativeInteger"/>
+										<xs:element name="Label" type="xs:normalizedString"/>
+										<xs:element name="Value" type="xs:normalizedString"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
