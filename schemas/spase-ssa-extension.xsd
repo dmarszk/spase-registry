@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- SPASE Extension : includes spase schema and the extension -->
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" xmlns:spase="http://www.spase-group.org/data/schema" targetNamespace="http://www.spase-group.org/data/schema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.2.6" vc:minVersion="1.1">
-<xsd:import namespace="http://esa.ssa.swe/swep/datamodel/spase-extension" schemaLocation="./spase-2_2_6.xsd"/>
+<xsd:include schemaLocation="./spase-2_2_6.xsd"></xsd:include>
 <xsd:import namespace="http://esa.ssa.swe/swep/datamodel/spase-extension" schemaLocation="./ssa-extension.xsd"/>
 	</xsd:schema>
