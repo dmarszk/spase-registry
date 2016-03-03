@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- edited with XMLSpy v2006 sp2 U (http://www.altova.com) by Joel Lim (Spacebel SA) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:spase="http://www.spase-group.org/data/schema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:import namespace="http://www.spase-group.org/data/schema" schemaLocation="./spase-ssa-extension.xsd"/>
+		
+	<xs:element name="Package" type="PackageType"/>
+	<xs:complexType name="PackageType">
+		<xs:sequence>
+			<xs:element ref="spase:Spase" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
