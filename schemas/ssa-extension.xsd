@@ -151,4 +151,60 @@
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
+	<xs:element name="DataSources">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="DataSource" type="swe-spase:DataSourceType" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="DataSourceType">
+		<xs:sequence>
+			<xs:element name="host" type="swe-spase:HostType"/>
+			<xs:choice>
+				<xs:element name="interval" type="xs:duration">
+					<xs:annotation>
+						<xs:documentation>The time interval is specified in the following form "PnYnMnDTnHnMnS" where  P indicates the period(required),nY indicates the number of years, nM indicates the number of months, etc .</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="cronFrequency" type="xs:normalizedString">
+					<xs:annotation>
+						<xs:documentation>The cronFrequency is required when the filePattern include a date pattern. 
+In that case, the cron format must comply to Unix cron format (Minute Hour Day_of_the_Month Month_of_the_Year Dayof_the_Week) which is a flexible way to define time and frequency.
+http://www.nncron.ru/help/EN/working/cron-format.htm </xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+			<xs:element name="filePattern" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>The file pattern may include a date pattern. In the case of an FTP, it may also contains a wildcard *.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="HostType">
+		<xs:sequence>
+			<xs:element name="host" type="xs:string"/>
+			<xs:element name="protocol" type="swe-spase:Protocol">
+				<xs:annotation>
+					<xs:documentation>HTTP,HTTPS,FTP</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="port" type="xs:integer" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>If not mentioned, the default protocol port is used.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="username" type="xs:string" minOccurs="0"/>
+			<xs:element name="password" type="xs:string" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="Protocol">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="HTTPS"/>
+			<xs:enumeration value="HTTP"/>
+			<xs:enumeration value="SFTP"/>
+			<xs:enumeration value="FTP"/>
+		</xs:restriction>
+	</xs:simpleType>
 </xs:schema>
