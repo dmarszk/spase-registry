@@ -18,10 +18,20 @@
 							<xs:element name="UserDomain" maxOccurs="unbounded">
 								<xs:complexType>
 									<xs:sequence>
-										<xs:element name="Acronym" type="xs:token">
+										<xs:element name="Acronym">
 											<xs:annotation>
 												<xs:documentation>See mapping extension</xs:documentation>
 											</xs:annotation>
+											<xs:simpleType>
+												<xs:restriction base="xs:token">
+													<xs:enumeration value="GEN"/>
+													<xs:enumeration value="SCD"/>
+													<xs:enumeration value="SCO"/>
+													<xs:enumeration value="SCH"/>
+													<xs:enumeration value="LAU"/>
+													<xs:enumeration value="NSO"/>
+												</xs:restriction>
+											</xs:simpleType>
 										</xs:element>
 										<xs:element name="Relevance">
 											<xs:simpleType>
@@ -84,6 +94,13 @@
 						</xs:sequence>
 					</xs:complexType>
 				</xs:element>
+                                <xs:element name="DataProvider" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="license" type="xs:token"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -106,20 +123,6 @@
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element name="Cadence" type="xs:duration"/>
-			</xs:sequence>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="UserDomainMappings">
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="Mapping" minOccurs="0" maxOccurs="unbounded">
-					<xs:complexType>
-						<xs:sequence>
-							<xs:element name="Name" type="xs:token"/>
-							<xs:element name="Acronym" type="xs:token"/>
-						</xs:sequence>
-					</xs:complexType>
-				</xs:element>
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -162,32 +165,51 @@
 		<xs:sequence>
 			<xs:element name="host" type="swe-spase:HostType"/>
 			<xs:choice>
-				<xs:element name="interval" type="xs:duration">
+				<xs:sequence>
 					<xs:annotation>
-						<xs:documentation>The time interval is specified in the following form "PnYnMnDTnHnMnS" where  P indicates the period(required),nY indicates the number of years, nM indicates the number of months, etc .</xs:documentation>
+						<xs:documentation>HTTP/FTP attributes</xs:documentation>
 					</xs:annotation>
-				</xs:element>
-				<xs:element name="cronFrequency" type="xs:normalizedString">
-					<xs:annotation>
-						<xs:documentation>The cronFrequency is required when the filePattern include a date pattern. 
+					<xs:choice>
+						<xs:element name="interval" type="xs:duration">
+							<xs:annotation>
+								<xs:documentation>The time interval is specified in the following form "PnYnMnDTnHnMnS" where  P indicates the period(required),nY indicates the number of years, nM indicates the number of months, etc .</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="cronFrequency" type="xs:normalizedString">
+							<xs:annotation>
+								<xs:documentation>The cronFrequency is required when the filePattern include a date pattern. 
 In that case, the cron format must comply to Unix cron format (Minute Hour Day_of_the_Month Month_of_the_Year Dayof_the_Week) which is a flexible way to define time and frequency.
 http://www.nncron.ru/help/EN/working/cron-format.htm </xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+					<xs:element name="filePattern" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>The file pattern may include a date pattern. In the case of an FTP, it may also contains a wildcard *.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+				<xs:sequence>
+					<xs:annotation>
+						<xs:documentation>Email attributes</xs:documentation>
 					</xs:annotation>
-				</xs:element>
+					<xs:element name="subjectFilter" type="xs:normalizedString"/>
+					<xs:element name="contentFilter" type="xs:normalizedString"/>
+					<xs:element name="senderFilter" type="xs:normalizedString"/>
+				</xs:sequence>
 			</xs:choice>
-			<xs:element name="filePattern" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>The file pattern may include a date pattern. In the case of an FTP, it may also contains a wildcard *.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="HostType">
 		<xs:sequence>
-			<xs:element name="host" type="xs:string"/>
+			<xs:element name="host" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>(pop server host in case of email)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element name="protocol" type="swe-spase:Protocol">
 				<xs:annotation>
-					<xs:documentation>HTTP,HTTPS,FTP</xs:documentation>
+					<xs:documentation>HTTP,HTTPS,FTP,POP,IMAP</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="port" type="xs:integer" minOccurs="0">
@@ -205,6 +227,9 @@ http://www.nncron.ru/help/EN/working/cron-format.htm </xs:documentation>
 			<xs:enumeration value="HTTP"/>
 			<xs:enumeration value="SFTP"/>
 			<xs:enumeration value="FTP"/>
+			<xs:enumeration value="IMAP"/>
+			<xs:enumeration value="POP"/>
+			<xs:enumeration value="POPS"/>
 		</xs:restriction>
 	</xs:simpleType>
 </xs:schema>
