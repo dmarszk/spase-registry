@@ -18,20 +18,10 @@
 							<xs:element name="UserDomain" maxOccurs="unbounded">
 								<xs:complexType>
 									<xs:sequence>
-										<xs:element name="Acronym">
+										<xs:element name="Acronym" type="xs:token">
 											<xs:annotation>
 												<xs:documentation>See mapping extension</xs:documentation>
 											</xs:annotation>
-											<xs:simpleType>
-												<xs:restriction base="xs:token">
-													<xs:enumeration value="GEN"/>
-													<xs:enumeration value="SCD"/>
-													<xs:enumeration value="SCO"/>
-													<xs:enumeration value="SCH"/>
-													<xs:enumeration value="LAU"/>
-													<xs:enumeration value="NSO"/>
-												</xs:restriction>
-											</xs:simpleType>
 										</xs:element>
 										<xs:element name="Relevance">
 											<xs:simpleType>
